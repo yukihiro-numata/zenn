@@ -114,7 +114,7 @@ class CustomNetworkImage extends StatelessWidget {
 }
 ```
 
-ただ、このような方法を取る場合だとキャッシュをかませたい場合にキャッシュ機構を自作する必要があったり手間が多いので微妙に思います。。
+ただ、このような方法を取る場合だとキャッシュをかませたい場合にキャッシュ機構を自作する必要があったり手間が多いので微妙に思います。
 ちなみにこの問題はCachedNetworkImageを使う場合でも発生します。
 https://github.com/Baseflow/flutter_cached_network_image/issues/443
 
