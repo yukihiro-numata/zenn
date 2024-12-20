@@ -32,16 +32,70 @@ GetXの使用において扱いづらさを感じた点は以下の3つです：
 
 GetXのDIは `Get.put()` を使って依存性注入を行い、 `Get.find()` で注入されたインスタンスを取得するというシンプルな仕組みです。アプリケーションがシンプルでDI対象が少ない場合は問題ありませんでしたが、アプリケーションが複雑化してグローバルなステートを管理する必要が増えるにつれ、問題が顕在化しました。
 
-具体的には、依存注入の忘れによるバグ（ `Get.put()` の忘れで `Get.find()` が失敗する）が多発するようになりました。GetXでDIを管理する場合、手動で依存注入を行う必要があり、綿密なアプリケーション設計が求められます。依存関係が明確でないと容易に壊れやすい状態になるのです。
+具体的には、依存注入の忘れによるバグ（ `Get.put()` の忘れで `Get.find()` が失敗する）が多発するようになりました。典型的な問題例として以下があります：
+
+```dart
+class SomeService {
+  final OtherService otherService;
+
+  SomeService(): otherService = Get.find<OtherService>();
+}
+
+void main() {
+  // この一行を忘れると、 `Get.find()` が失敗する
+  // Get.put(OtherService());
+
+  final service = SomeService();  // ここでエラーになる
+}
+```
+
+このようなDIのし忘れは、プロジェクトが大規模になるほど頻発し、デバッグが難しくなります。GetXでDIを管理する場合、手動で依存注入を行う必要があり依存関係が明確でないと容易に壊れやすい状態になってしまうため、綿密なアプリケーション設計が必要となります。
 
 ## 2. グローバルなステートにおけるRxの扱いが難しい
 
-GetXはRxをベースとしています。変数の更新を容易に監視できる一方で、変数がどこで使用されているかを把握するのが難しく感じました。特にグローバルなステートにおいては、どこで使用されているかが不明瞭で、軽微な修正が関係のない箇所に影響を与えることがありました。このため、依存関係を明確にする厳密なアプリケーション設計が必要でしたが、うまく運用できていませんでした。
+GetXはRxをベースとしています。変数の更新を容易に監視できる一方で、変数がどこで使用されているかを把握するのが難しく感じました。特にグローバルなステートにおいては、どこで使用されているかが不明瞭で、軽微な修正が関係のない箇所に影響を与えることがありました。以下の例が典型的です：
+
+```dart
+class GlobalStateController extends GetxController {
+  var count = 0.obs;
+}
+
+// あるコンポーネント
+class ComponentA extends StatelessWidget {
+  final GlobalStateController controller = Get.find();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Text('${controller.count}'));
+  }
+}
+
+// 別のコンポーネント
+class ComponentB extends StatelessWidget {
+  final GlobalStateController controller = Get.find();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => Text('${controller.count}'));
+  }
+}
+
+// グローバルステートの変更
+void incrementCounter() {
+  final controller = Get.find<GlobalStateController>();
+  controller.count++;
+}
+```
+
+このように、どこで状態が変更されるかわかりづらく、意図しない副作用が発生しやすい状況です。依存関係を明確にする厳密なアプリケーション設計が必要でしたが、うまく運用できていませんでした。
 
 ## 3. GetX自体のメンテナンス頻度が低い
 
-GetXの最終リリース日は `2023年9月8日` です。機能のアップデートがないだけならまだしも、不具合修正も行われないため非常に問題となっています。GetXに起因する不具合がいくつかあり、数ヶ月経っても修正されていない状況です。こうした状況から、ライブラリ選定の重要性を痛感しました。
-Ref: [GitHub GetX Issue #3112](https://github.com/jonataslaw/getx/issues/3112)
+GetXの最終リリース日は `2023年9月8日` です。機能のアップデートがないだけならまだしも、不具合修正も行われないため非常に問題となっています。GetXに起因する不具合がいくつかあり、数ヶ月経っても修正されていない状況です。例えば、以下の問題はタイミングによって `Get.find()` が失敗するという致命的な不具合です。
+
+> Ref: [Issue](https://github.com/jonataslaw/getx/issues/3112)
+
+こうした状況から、ライブラリ選定の重要性を痛感しました。
 
 # 今後について
 
