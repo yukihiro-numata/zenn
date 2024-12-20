@@ -3,7 +3,8 @@ title: "GetXの課題とriverpodへの移行"
 emoji: "🚀"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Flutter", "GetX"]
-published: false
+published: true
+published_at: 2024-12-21 10:00
 publication_name: mixi
 ---
 
