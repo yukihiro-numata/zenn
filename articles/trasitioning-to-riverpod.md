@@ -80,7 +80,7 @@ class SampleViewModel {
 }
 
 class SampleState {
-  final Rx<SampleResponse> response = Rx(SampleResponse());
+  final Rxn<SampleResponse> response = Rxn();
 }
 
 class SampleAction {
@@ -98,7 +98,44 @@ class SampleResponse {}
 我々のチームはスモールチームでネイティブアプリ以外にもWebアプリとサーバーサイドアプリの開発も行なっているため、このコスパの悪さがかなりボトルネックに感じるようになりました。
 また、このアーキテクチャはネイティブアプリ独自の構成であったため、スイッチングコストも大きく改善を余儀なくされました。
 
-## 問題②：
+## 問題②：コードの保守性と再現性に関する問題
+タイトルをつけるとすれば、「ロジックのモジュール化とカプセル化の重要性」としてはいかがでしょうか。これにより、以下のような全体像を持つ文章となります：
+
+---
+
+### ロジックのモジュール化とカプセル化の重要性
+ロジックのモジュール化やカプセル化が適切に行われていなかったため、コードのシンプルさや保守性が損なわれていました。また、この問題を明確に言語化したり、ルールとして定義したりしていなかったため、開発者によってコードの書き方が異なり、再現性のない状態が問題となっていました。
+
+例えば、同じオブジェクトを扱う異なる画面AとBがあるとします。このオブジェクトは時刻と、時刻を表示するかどうかを示すフラグを持っています。本来であれば、こうした処理はSampleというモデルクラスを作成し、そのgetterメソッドとして実装すべきです。しかし、わざわざHelperというクラスを作成し、依存関係を増やしてしまっています。
+
+特に我々のプロジェクトでは、APIにGraphQLを採用しており、型の自動生成も行っています。しかし、Fragment Colocationを導入することで、ページごとに型が異なる状態になり、問題がさらに顕在化しました。
+
+```dart
+class SampleResponse {
+  final String time;
+  final bool notShowTime;
+
+  const SampleResponse({
+    required this.time,
+    required this.notShowTime,
+  });
+}
+
+class SampleHelper {
+  DateTime _stringToDatetime(String time) {
+    return DateTime.parse(time);
+  }
+
+  DateTime? formatTime(SampleResponse sample) {
+    if (sample.notShowTime) {
+      return null;
+    }
+
+    return _stringToDatetime(sample.time);
+  }
+}
+```
+
 
 ```mermaid
 graph TD;
