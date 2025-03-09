@@ -6,6 +6,25 @@ topics: ["Flutter", "GetX", "riverpod"]
 published: false
 ---
 
+```mermaid
+graph TD
+    GQL --> Action1
+    GQL --> Action2
+    GQL --> Action3
+    Action1 --> State1
+    Action2 --> State2
+    Action3 --> State3
+    State1 --> ViewModel1
+    State2 --> ViewModel2
+    State3 --> ViewModel3
+    ViewModel1 --> Controller1
+    ViewModel2 --> Controller2
+    ViewModel3 --> Controller3
+    Controller1 --> Page1
+    Controller2 --> Page2
+    Controller3 --> Page3
+```
+
 # モジュール化、カプセル化の必要性を議論する
 
 テスト時にモック化
