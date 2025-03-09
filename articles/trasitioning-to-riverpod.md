@@ -6,6 +6,8 @@ topics: ["Flutter", "GetX", "riverpod"]
 published: false
 ---
 
+# 概要
+
 ```mermaid
 graph LR
     Page --> Controller
@@ -13,6 +15,27 @@ graph LR
     ViewModel --> State
     State --> Action
     Action --> API
+```
+
+```mermaid
+graph TD;
+    subgraph Presentation Layer
+        A[Widget] --> B[Controller]
+        B --> C[State]
+    end
+
+    subgraph Domain Layer
+        D[Service] --> E[Model]
+    end
+
+    subgraph Data Layer
+        F[Repository] --> G[Dto]
+        G --> H[DataSource]
+    end
+
+    B --> F
+    D --> F
+    B --> D
 ```
 
 # モジュール化、カプセル化の必要性を議論する
